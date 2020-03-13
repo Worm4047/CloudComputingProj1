@@ -14,6 +14,6 @@ if __name__ =='__main__':
     start_time = time.time()
     BUCKET_NAME = "worm4047bucket1"
     FILE_NAME = "video1_downloaded.mp4"
-    OBJECT_NAME = "vvakurvgqt"
+    OBJECT_NAME = "kcyrdjyulz"
     download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
     

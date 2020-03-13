@@ -29,6 +29,16 @@ def upload_file(file_name, bucket, object_name=None):
         response = s3_client.upload_file(file_name, bucket, object_name, Callback=ProgressPercentage(file_name))
     except ClientError as e:
         logging.error(e)
+        return False, {}
+    return True, object_name
+
+def addToSqs(object_name, bucket_name):
+    sqs = boto3.resource('sqs')
+    queue = sqs.get_queue_by_name(QueueName='video_queue')
+    try:
+        queue.send_message(MessageBody=object_name + ':' + bucket_name)
+    except Exception as e:
+        logging.error(e)
         return False
     return True
 
@@ -36,6 +46,12 @@ if __name__ =='__main__':
     start_time = time.time()
     BUCKET_NAME = "worm4047bucket1"
     VIDEO_FILE = "video1.mp4"
-    upload_file(VIDEO_FILE, BUCKET_NAME)
+    print("Uploading to S3")
+    result, obj = upload_file(VIDEO_FILE, BUCKET_NAME)
+    if(result):
+        print("Uploading to sqs ", obj)
+        addToSqs(obj, BUCKET_NAME)
+    else:
+        print("Upload to S3 failed")
     print("--- %s seconds ---" % (time.time() - start_time))
     
