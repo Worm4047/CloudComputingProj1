@@ -6,6 +6,7 @@ import string
 import random
 import time
 import os
+import time
 
 PATH_DARKNET = "/home/ubuntu/darknet"
 PATH_PROJ = "/home/ubuntu/CloudComputingProj1"
@@ -53,6 +54,7 @@ def processMessages():
     results = dict()
     # Process messages by printing out body and optional author name
     while True:
+        time.sleep(5)
         for message in queue.receive_messages():
             object_name, bucket_name = message.body.split(':')
             print("Processing ", object_name, bucket_name)
@@ -70,6 +72,7 @@ def processMessages():
                     print("--- %s seconds ---" % (time.time() - start_time))
                     object_list = get_objects(FILENAME)
                     results[object_name] = object_list
+                    yield True, {object_name:object_list}
                 except Exception as e:
                     logging.error(e)
                     yield False, {}
@@ -77,11 +80,13 @@ def processMessages():
                 logging.error(e)
                 yield False, {}
             message.delete()
-        yield True, results    
+        
+            
         
 
 if __name__ == '__main__':
     os.chdir(PATH_DARKNET)
+    res = []
     status, obj = processMessages()
     os.chdir(PATH_PROJ)
     if(not status):
