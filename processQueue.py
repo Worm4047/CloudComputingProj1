@@ -81,9 +81,9 @@ def processMessages():
         
 
 if __name__ == '__main__':
-    # os.chdir(PATH_DARKNET)
+    os.chdir(PATH_DARKNET)
     status, obj = processMessages()
-    # os.chdir(PATH_PROJ)
+    os.chdir(PATH_PROJ)
     if(not status):
         print("Got Error")
     else:
