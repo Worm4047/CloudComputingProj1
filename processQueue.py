@@ -52,37 +52,38 @@ def processMessages():
     queue = sqs.get_queue_by_name(QueueName='video_queue')
     results = dict()
     # Process messages by printing out body and optional author name
-    for message in queue.receive_messages():
-        
-        object_name, bucket_name = message.body.split(':')
-        print("Processing ", object_name, bucket_name)
-        temp_file_name = object_name + '.h264'
-        try:
-            downloadFile(bucket_name, object_name, temp_file_name)
-            FILENAME = "results.txt"
+    while True:
+        for message in queue.receive_messages():
+            object_name, bucket_name = message.body.split(':')
+            print("Processing ", object_name, bucket_name)
+            temp_file_name = object_name + '.h264'
             try:
-                command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
-                print("Darknet started ", command)
-                start_time = time.time()
-                process = subprocess.Popen(command, shell=True)
-                process.wait()
-                print("Darknet finished")
-                print("--- %s seconds ---" % (time.time() - start_time))
-                object_list = get_objects(FILENAME)
-                results[object_name] = object_list
+                downloadFile(bucket_name, object_name, temp_file_name)
+                FILENAME = "results.txt"
+                try:
+                    command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                    print("Darknet started ", command)
+                    start_time = time.time()
+                    process = subprocess.Popen(command, shell=True)
+                    process.wait()
+                    print("Darknet finished")
+                    print("--- %s seconds ---" % (time.time() - start_time))
+                    object_list = get_objects(FILENAME)
+                    results[object_name] = object_list
+                except Exception as e:
+                    logging.error(e)
+                    yield False, {}
             except Exception as e:
                 logging.error(e)
-                return False, {}
-        except Exception as e:
-            logging.error(e)
-            return False, {}
-    return True, results    
-        # message.delete()
+                yield False, {}
+            message.delete()
+        yield True, results    
+        
 
 if __name__ == '__main__':
-    os.chdir(PATH_DARKNET)
+    # os.chdir(PATH_DARKNET)
     status, obj = processMessages()
-    os.chdir(PATH_PROJ)
+    # os.chdir(PATH_PROJ)
     if(not status):
         print("Got Error")
     else:
