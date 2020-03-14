@@ -93,7 +93,7 @@ def processMessages():
             except Exception as e:
                 logging.error(e)
                 yield False, {}
-            # message.delete()
+            message.delete()
         
             
         
