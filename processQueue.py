@@ -76,8 +76,8 @@ def processMessages():
                 downloadFile(bucket_name, object_name, temp_file_name)
                 FILENAME = "results.txt"
                 try:
-                    # command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
-                    command="ping google.com"
+                    command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                    # command="ping google.com"
                     print("Darknet started ", command)
                     start_time = time.time()
                     process = subprocess.Popen(command, shell=True)
@@ -99,7 +99,7 @@ def processMessages():
         
 
 if __name__ == '__main__':
-    # os.chdir(PATH_DARKNET)
+    os.chdir(PATH_DARKNET)
     res = []
     BUCKET_NAME = "worm4047bucket2"
     for status, obj in processMessages():
@@ -112,4 +112,4 @@ if __name__ == '__main__':
                     json.dump(obj, outfile)
                 upload_file(key+'.json', BUCKET_NAME, key)
 
-    # os.chdir(PATH_PROJ)
+    os.chdir(PATH_PROJ)
