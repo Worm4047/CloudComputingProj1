@@ -45,7 +45,7 @@ def addToSqs(object_name, bucket_name):
 if __name__ =='__main__':
     start_time = time.time()
     BUCKET_NAME = "worm4047bucket1"
-    VIDEO_FILE = "video1.mp4"
+    VIDEO_FILE = "temp.h264"
     print("Uploading to S3")
     result, obj = upload_file(VIDEO_FILE, BUCKET_NAME)
     if(result):

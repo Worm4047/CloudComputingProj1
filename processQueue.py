@@ -2,14 +2,24 @@ import boto3
 from botocore.exceptions import ClientError
 import logging
 import subprocess
+import string
+import random
 
+import os
+
+PATH_DARKNET = "/home/ubuntu/darknet"
+PATH_PROJ = "/home/ubuntu/CloudComputingProj1"
 
 def downloadFile(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
-    s3 = boto3.client('s3')
-    s3.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
+	s3 = boto3.client('s3')
+	s3.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
 
+def generate_random_object_name(stringLength = 10):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(stringLength))
 
 def get_objects(FILENAME):
+    print(os.getcwd())
     f = open(FILENAME, 'r')
     temp_data = f.read().split('\n')
     data = dict()
@@ -37,6 +47,7 @@ def get_objects(FILENAME):
     return result
 
 def processMessages():
+    print(os.getcwd())
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName='video_queue')
     results = dict()
@@ -47,26 +58,28 @@ def processMessages():
         temp_file_name = object_name + '.h264'
         try:
             downloadFile(bucket_name, object_name, temp_file_name)
-            FILENAME = 'test_video.txt'
+            FILENAME = "results.txt"
             try:
-                print("Darknet started")
-                process = subprocess.Popen("./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights test.h264 > ../test_video.txt", shell=False)
+		command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+		print("Darknet started ", command)
+                process = subprocess.Popen(command, shell=True)
                 process.wait()
                 print("Darknet finished")
                 object_list = get_objects(FILENAME)
                 results[object_name] = object_list
-                pass
             except Exception as e:
-                logging.error(" Error with get_objects " + e)
+                logging.error(e)
                 return False, {}
         except Exception as e:
-            logging.error(" Error with download File " + e)
+            logging.error(e)
             return False, {}
     return True, results    
         # message.delete()
 
 if __name__ == '__main__':
+    os.chdir(PATH_DARKNET)
     status, obj = processMessages()
+    os.chdir(PATH_PROJ)
     if(not status):
         print("Got Error")
     else:
