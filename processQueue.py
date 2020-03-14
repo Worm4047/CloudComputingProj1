@@ -25,6 +25,7 @@ def get_objects(FILENAME):
         elif '%' in lines:
             obj_in_frame.append(lines)
     result = dict()
+
     for key in data:
         object_map = dict()
         for obj in data[key]:
@@ -45,11 +46,11 @@ def processMessages():
         print("Processing ", object_name, bucket_name)
         temp_file_name = object_name + '.h264'
         try:
-            # downloadFile(bucket_name, object_name, temp_file_name)
+            downloadFile(bucket_name, object_name, temp_file_name)
             FILENAME = 'test_video.txt'
             try:
                 print("Darknet started")
-                process = subprocess.Popen("ping google.com", shell=False)
+                process = subprocess.Popen("./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights test.h264 > ../test_video.txt", shell=False)
                 process.wait()
                 print("Darknet finished")
                 object_list = get_objects(FILENAME)
