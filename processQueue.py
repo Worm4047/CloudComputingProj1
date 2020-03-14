@@ -37,14 +37,14 @@ def get_objects(FILENAME):
     result = dict()
 
     for key in data:
-        object_map = dict()
+        object_map = []
         for obj in data[key]:
             obj_name, obj_conf = obj.split()
             obj_name = (obj_name.replace(':',''))
             obj_conf = (int)(obj_conf.replace('%',''))
-            object_map[obj_name] = (obj_conf*1.0)/100
+            object_map.append({obj_name:(obj_conf*1.0)/100})
         result[key] = (object_map)
-    return result
+    return {'results' : [result]}
 
 def processMessages():
     print(os.getcwd())
