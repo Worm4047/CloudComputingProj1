@@ -4,7 +4,7 @@ import logging
 import subprocess
 import string
 import random
-
+import time
 import os
 
 PATH_DARKNET = "/home/ubuntu/darknet"
@@ -53,6 +53,7 @@ def processMessages():
     results = dict()
     # Process messages by printing out body and optional author name
     for message in queue.receive_messages():
+        
         object_name, bucket_name = message.body.split(':')
         print("Processing ", object_name, bucket_name)
         temp_file_name = object_name + '.h264'
@@ -60,11 +61,13 @@ def processMessages():
             downloadFile(bucket_name, object_name, temp_file_name)
             FILENAME = "results.txt"
             try:
-		command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
-		print("Darknet started ", command)
+                command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                print("Darknet started ", command)
+                start_time = time.time()
                 process = subprocess.Popen(command, shell=True)
                 process.wait()
                 print("Darknet finished")
+                print("--- %s seconds ---" % (time.time() - start_time))
                 object_list = get_objects(FILENAME)
                 results[object_name] = object_list
             except Exception as e:
