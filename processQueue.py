@@ -7,6 +7,8 @@ import random
 import time
 import os
 import time
+import json
+from ProgressPercentage import *
 
 PATH_DARKNET = "/home/ubuntu/darknet"
 PATH_PROJ = "/home/ubuntu/CloudComputingProj1"
@@ -18,6 +20,17 @@ def downloadFile(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
 def generate_random_object_name(stringLength = 10):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
+
+def upload_file(file_name, bucket, object_name=None):
+
+    s3_client = boto3.client('s3')
+    try:
+        response = s3_client.upload_file(file_name, bucket, object_name, Callback=ProgressPercentage(file_name))
+    except ClientError as e:
+        logging.error(e)
+        return False, {}
+    return True, object_name
+
 
 def get_objects(FILENAME):
     print(os.getcwd())
@@ -63,7 +76,8 @@ def processMessages():
                 downloadFile(bucket_name, object_name, temp_file_name)
                 FILENAME = "results.txt"
                 try:
-                    command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                    # command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                    command="ping google.com"
                     print("Darknet started ", command)
                     start_time = time.time()
                     process = subprocess.Popen(command, shell=True)
@@ -79,17 +93,23 @@ def processMessages():
             except Exception as e:
                 logging.error(e)
                 yield False, {}
-            message.delete()
+            # message.delete()
         
             
         
 
 if __name__ == '__main__':
-    os.chdir(PATH_DARKNET)
+    # os.chdir(PATH_DARKNET)
     res = []
-    status, obj = processMessages()
-    os.chdir(PATH_PROJ)
-    if(not status):
-        print("Got Error")
-    else:
-        print(obj)
+    BUCKET_NAME = "worm4047bucket2"
+    for status, obj in processMessages():
+        if(not status):
+            print("Got Error")
+        else:
+            print(obj)
+            for key in obj:
+                with open(key+'.json', 'w') as outfile:
+                    json.dump(obj, outfile)
+                upload_file(key+'.json', BUCKET_NAME, key)
+
+    # os.chdir(PATH_PROJ)

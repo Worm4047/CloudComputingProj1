@@ -40,7 +40,8 @@ def listBuckets():
         print(bucket["Name"])
 
 if __name__ =='__main__':
-    create_bucket()
+    create_bucket("worm4047bucket2")
+    listBuckets()
 
 
 
