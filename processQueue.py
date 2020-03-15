@@ -13,19 +13,32 @@ from ProgressPercentage import *
 PATH_DARKNET = "/home/ubuntu/darknet"
 PATH_PROJ = "/home/ubuntu/CloudComputingProj1"
 
+def download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
+    s3 = boto3.client('s3')
+    s3.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
+
+
 def downloadFile(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
-	s3 = boto3.client('s3')
-	s3.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
+    global ACCESS_KEY
+    global SECRET_KEY
+    global SESSION_TOKEN
+    global REGION
+    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
+	# client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
+    client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
 
 def generate_random_object_name(stringLength = 10):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 def upload_file(file_name, bucket, object_name=None):
-
-    s3_client = boto3.client('s3')
+    global ACCESS_KEY
+    global SECRET_KEY
+    global SESSION_TOKEN
+    global REGION
+    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
     try:
-        response = s3_client.upload_file(file_name, bucket, object_name, Callback=ProgressPercentage(file_name))
+        response = client.upload_file(file_name, bucket, object_name, Callback=ProgressPercentage(file_name))
     except ClientError as e:
         logging.error(e)
         return False, {}
@@ -61,23 +74,33 @@ def get_objects(FILENAME):
     return {'results' : [result]}
 
 def processMessages():
-    print(os.getcwd())
-    sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(QueueName='video_queue')
+    # download_file("wormcredentials", "cred_file.json", "cred_file.json")
+    global ACCESS_KEY
+    global SECRET_KEY
+    global SESSION_TOKEN
+    global REGION
+    client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
+    queue = client.get_queue_url(QueueName='video_queue')
     results = dict()
     # Process messages by printing out body and optional author name
     while True:
         time.sleep(5)
-        for message in queue.receive_messages():
-            object_name, bucket_name = message.body.split(':')
+        li = []
+        try:
+            li = client.receive_message(QueueUrl=queue['QueueUrl'],VisibilityTimeout=5)['Messages']
+        except Exception as e:
+            pass
+        for message in li:
+            print(message)
+            object_name, bucket_name = message['Body'].split(':')
             print("Processing ", object_name, bucket_name)
             temp_file_name = object_name + '.h264'
             try:
                 downloadFile(bucket_name, object_name, temp_file_name)
                 FILENAME = "results.txt"
                 try:
-                    command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
-                    # command="ping google.com"
+                    # command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                    command="ping google.com"
                     print("Darknet started ", command)
                     start_time = time.time()
                     process = subprocess.Popen(command, shell=True)
@@ -93,13 +116,23 @@ def processMessages():
             except Exception as e:
                 logging.error(e)
                 yield False, {}
-            message.delete()
+            client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
         
             
         
 
 if __name__ == '__main__':
-    os.chdir(PATH_DARKNET)
+    cred_file = "cred.json"
+    ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
+    # downloadFile("wormcredentials", cred_file, cred_file)
+    with open(cred_file) as f:
+        data = json.load(f)
+        ACCESS_KEY = data['aws_access_key_id']
+        SECRET_KEY = data['aws_secret_access_key']
+        SESSION_TOKEN = data['aws_session_token']
+        REGION = data['region']
+
+    # os.chdir(PATH_DARKNET)
     res = []
     BUCKET_NAME = "worm4047bucket2"
     for status, obj in processMessages():
@@ -107,9 +140,9 @@ if __name__ == '__main__':
             print("Got Error")
         else:
             print(obj)
-            for key in obj:
-                with open(key+'.json', 'w') as outfile:
-                    json.dump(obj, outfile)
-                upload_file(key+'.json', BUCKET_NAME, key)
+            # for key in obj:
+            #     with open(key+'.json', 'w') as outfile:
+            #         json.dump(obj, outfile)
+            #     upload_file(key+'.json', BUCKET_NAME, key)
 
-    os.chdir(PATH_PROJ)
+    # os.chdir(PATH_PROJ)
