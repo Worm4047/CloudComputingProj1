@@ -9,6 +9,8 @@ import os
 import time
 import json
 from ProgressPercentage import *
+import logging
+logging.basicConfig(filename='processQueue.log')
 
 PATH_DARKNET = "/home/ubuntu/darknet"
 PATH_PROJ = "/home/ubuntu/CloudComputingProj1"
@@ -46,7 +48,7 @@ def upload_file(file_name, bucket, object_name=None):
 
 
 def get_objects(FILENAME):
-    print(os.getcwd())
+    logging.info(os.getcwd())
     f = open(FILENAME, 'r')
     temp_data = f.read().split('\n')
     data = dict()
@@ -84,16 +86,16 @@ def processMessages():
     results = dict()
     # Process messages by printing out body and optional author name
     while True:
-        time.sleep(5)
         li = []
         try:
             li = client.receive_message(QueueUrl=queue['QueueUrl'])['Messages']
+            print(li)
         except Exception as e:
             pass
         for message in li:
-            print(message)
+            logging.info(message)
             object_name, bucket_name = message['Body'].split(':')
-            print("Processing ", object_name, bucket_name)
+            logging.info("Processing ", object_name, bucket_name)
             temp_file_name = object_name + '.h264'
             try:
                 downloadFile(bucket_name, object_name, temp_file_name)
@@ -101,12 +103,12 @@ def processMessages():
                 try:
                     command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
                     # command="ping google.com"
-                    print("Darknet started ", command)
+                    logging.info("Darknet started ", command)
                     start_time = time.time()
                     process = subprocess.Popen(command, shell=True)
                     process.wait()
-                    print("Darknet finished")
-                    print("--- %s seconds ---" % (time.time() - start_time))
+                    logging.info("Darknet finished")
+                    logging.info("--- %s seconds ---" % (time.time() - start_time))
                     object_list = get_objects(FILENAME)
                     results[object_name] = object_list
                     yield True, {object_name:object_list}
@@ -132,17 +134,17 @@ if __name__ == '__main__':
         SESSION_TOKEN = data['aws_session_token']
         REGION = data['region']
 
-    os.chdir(PATH_DARKNET)
+    # os.chdir(PATH_DARKNET)
     res = []
     BUCKET_NAME = "worm4047bucket2"
     for status, obj in processMessages():
         if(not status):
-            print("Got Error")
+            logging.info("Got Error")
         else:
-            print(obj)
+            logging.info(obj)
             for key in obj:
                 with open(key+'.json', 'w') as outfile:
                     json.dump(obj, outfile)
                 upload_file(key+'.json', BUCKET_NAME, key)
 
-    os.chdir(PATH_PROJ)
+    # os.chdir(PATH_PROJ)
