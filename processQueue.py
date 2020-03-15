@@ -23,7 +23,7 @@ def downloadFile(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
+    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
 	# client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
     client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
 
@@ -36,7 +36,7 @@ def upload_file(file_name, bucket, object_name=None):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
+    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     try:
         response = client.upload_file(file_name, bucket, object_name, Callback=ProgressPercentage(file_name))
     except ClientError as e:
@@ -79,7 +79,7 @@ def processMessages():
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
+    client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     queue = client.get_queue_url(QueueName='video_queue')
     results = dict()
     # Process messages by printing out body and optional author name
@@ -87,7 +87,7 @@ def processMessages():
         time.sleep(5)
         li = []
         try:
-            li = client.receive_message(QueueUrl=queue['QueueUrl'],VisibilityTimeout=5)['Messages']
+            li = client.receive_message(QueueUrl=queue['QueueUrl'])['Messages']
         except Exception as e:
             pass
         for message in li:
@@ -99,8 +99,8 @@ def processMessages():
                 downloadFile(bucket_name, object_name, temp_file_name)
                 FILENAME = "results.txt"
                 try:
-                    # command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
-                    command="ping google.com"
+                    command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                    # command="ping google.com"
                     print("Darknet started ", command)
                     start_time = time.time()
                     process = subprocess.Popen(command, shell=True)
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         SESSION_TOKEN = data['aws_session_token']
         REGION = data['region']
 
-    # os.chdir(PATH_DARKNET)
+    os.chdir(PATH_DARKNET)
     res = []
     BUCKET_NAME = "worm4047bucket2"
     for status, obj in processMessages():
@@ -140,9 +140,9 @@ if __name__ == '__main__':
             print("Got Error")
         else:
             print(obj)
-            # for key in obj:
-            #     with open(key+'.json', 'w') as outfile:
-            #         json.dump(obj, outfile)
-            #     upload_file(key+'.json', BUCKET_NAME, key)
+            for key in obj:
+                with open(key+'.json', 'w') as outfile:
+                    json.dump(obj, outfile)
+                upload_file(key+'.json', BUCKET_NAME, key)
 
-    # os.chdir(PATH_PROJ)
+    os.chdir(PATH_PROJ)
