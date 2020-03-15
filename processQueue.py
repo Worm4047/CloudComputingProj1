@@ -134,7 +134,7 @@ if __name__ == '__main__':
         SESSION_TOKEN = data['aws_session_token']
         REGION = data['region']
 
-    # os.chdir(PATH_DARKNET)
+    os.chdir(PATH_DARKNET)
     res = []
     BUCKET_NAME = "worm4047bucket2"
     for status, obj in processMessages():
@@ -146,4 +146,4 @@ if __name__ == '__main__':
                     json.dump(obj, outfile)
                 upload_file(key+'.json', BUCKET_NAME, key)
 
-    # os.chdir(PATH_PROJ)
+    os.chdir(PATH_PROJ)
