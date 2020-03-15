@@ -95,7 +95,7 @@ def processMessages():
         for message in li:
             logging.info(message)
             object_name, bucket_name = message['Body'].split(':')
-            logging.info("Processing ", object_name, bucket_name)
+            logging.info("Processing " + object_name + " " +bucket_name)
             temp_file_name = object_name + '.h264'
             try:
                 downloadFile(bucket_name, object_name, temp_file_name)
@@ -103,7 +103,7 @@ def processMessages():
                 try:
                     command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
                     # command="ping google.com"
-                    logging.info("Darknet started ", command)
+                    logging.info("Darknet started " + command )
                     start_time = time.time()
                     process = subprocess.Popen(command, shell=True)
                     process.wait()
@@ -141,7 +141,6 @@ if __name__ == '__main__':
         if(not status):
             logging.info("Got Error")
         else:
-            logging.info(obj)
             for key in obj:
                 with open(key+'.json', 'w') as outfile:
                     json.dump(obj, outfile)
