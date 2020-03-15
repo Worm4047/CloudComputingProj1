@@ -10,7 +10,7 @@ import time
 import json
 from ProgressPercentage import *
 import logging
-logging.basicConfig(filename='processQueue.log')
+logging.basicConfig(filename='processQueue.log', level=logging.INFO)
 
 PATH_DARKNET = "/home/ubuntu/darknet"
 PATH_PROJ = "/home/ubuntu/CloudComputingProj1"
