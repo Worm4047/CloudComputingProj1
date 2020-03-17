@@ -76,7 +76,13 @@ def get_objects(FILENAME):
         result[key] = (object_map)
     return {'results' : [result]}
 
+def exportDisplay():
+    command = 'Xvfb :1 & export DISPLAY=:1'
+    process = subprocess.Popen(command, shell=True)
+    process.wait()
+
 def processMessages():
+    
     download_file("wormcredentials", "cred_file.json", "cred_file.json")
     global ACCESS_KEY
     global SECRET_KEY
@@ -125,6 +131,7 @@ def processMessages():
         
 
 if __name__ == '__main__':
+    exportDisplay()
     cred_file = "cred.json"
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
     # downloadFile("wormcredentials", cred_file, cred_file)
