@@ -10,6 +10,8 @@ import time
 import json
 from ProgressPercentage import *
 import logging
+from xvfbwrapper import Xvfb
+
 logging.basicConfig(filename='processQueue.log', level=logging.INFO)
 
 PATH_DARKNET = "/home/ubuntu/darknet"
@@ -131,7 +133,9 @@ def processMessages():
         
 
 if __name__ == '__main__':
-    exportDisplay()
+    vdisplay = Xvfb()
+    vdisplay.start()
+    # exportDisplay()
     cred_file = "cred.json"
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
     # downloadFile("wormcredentials", cred_file, cred_file)
@@ -155,3 +159,4 @@ if __name__ == '__main__':
                 upload_file(key+'.json', BUCKET_NAME, key)
 
     os.chdir(PATH_PROJ)
+    vdisplay.stop()
