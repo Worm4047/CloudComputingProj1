@@ -83,7 +83,7 @@ def exportDisplay():
 
 def processMessages():
     
-    download_file("wormcredentials", "cred_file.json", "cred_file.json")
+    download_file("wormcredentials", "cred.json", "cred.json")
     global ACCESS_KEY
     global SECRET_KEY
     global SESSION_TOKEN
