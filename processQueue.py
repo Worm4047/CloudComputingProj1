@@ -15,6 +15,7 @@ logging.basicConfig(filename='processQueue.log', level=logging.INFO)
 PATH_DARKNET = "/home/ubuntu/darknet"
 PATH_PROJ = "/home/ubuntu/CloudComputingProj1"
 
+
 def download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
     s3 = boto3.client('s3')
     s3.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
@@ -76,7 +77,7 @@ def get_objects(FILENAME):
     return {'results' : [result]}
 
 def processMessages():
-    # download_file("wormcredentials", "cred_file.json", "cred_file.json")
+    download_file("wormcredentials", "cred_file.json", "cred_file.json")
     global ACCESS_KEY
     global SECRET_KEY
     global SESSION_TOKEN
