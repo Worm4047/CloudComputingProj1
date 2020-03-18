@@ -112,6 +112,7 @@ if __name__ =='__main__':
     # convert_frames_to_video(VIDEO_FILE, VIDEO_FILE2, 10)
     logging.info("Uploading to S3")
     result, obj = upload_file(VIDEO_FILE, BUCKET_NAME)
+    print(result, obj)
     if(result):
         logging.info("Uploading to sqs ", obj)
         addToSqs(obj, BUCKET_NAME)
