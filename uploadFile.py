@@ -66,7 +66,7 @@ def upload_file(file_name, bucket, object_name=None):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    s3_client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
+    s3_client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,,region_name=REGION)
 
     # s3_client = boto3.client('s3')
     try:
@@ -81,7 +81,7 @@ def addToSqs(object_name, bucket_name):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    sqs = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,)
+    sqs = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,,region_name=REGION)
 
     queue = sqs.get_queue_url(QueueName='video_queue')
     try:
