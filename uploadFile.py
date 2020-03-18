@@ -21,6 +21,7 @@ def convert_frames_to_video(pathIn,pathOut,fps):
     # files = [f for f in os.listdir(pathIn) if isfile(join(pathIn, f))]
     vc = cv2.VideoCapture(pathIn)
     width, height = 0,0
+    result = []
     count = 0
     if vc.isOpened():
         width = int(vc.get(cv2.CAP_PROP_FRAME_WIDTH))
