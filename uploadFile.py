@@ -109,9 +109,9 @@ if __name__ =='__main__':
         os.remove(VIDEO_FILE2)
     except OSError:
         pass
-    convert_frames_to_video(VIDEO_FILE, VIDEO_FILE2, 10)
+    # convert_frames_to_video(VIDEO_FILE, VIDEO_FILE2, 10)
     logging.info("Uploading to S3")
-    result, obj = upload_file(VIDEO_FILE2, BUCKET_NAME)
+    result, obj = upload_file(VIDEO_FILE, BUCKET_NAME)
     if(result):
         logging.info("Uploading to sqs ", obj)
         addToSqs(obj, BUCKET_NAME)
