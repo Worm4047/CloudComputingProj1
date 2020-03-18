@@ -10,7 +10,7 @@ import time
 import json
 from ProgressPercentage import *
 import logging
-from xvfbwrapper import Xvfb
+import sys
 
 logging.basicConfig(filename='processQueue.log', level=logging.INFO)
 
@@ -78,64 +78,33 @@ def get_objects(FILENAME):
         result[key] = (object_map)
     return {'results' : [result]}
 
-def exportDisplay():
-    command = 'Xvfb :1 & export DISPLAY=:1'
-    process = subprocess.Popen(command, shell=True)
-    process.wait()
-
-def processMessages():
-    
-    download_file("wormcredentials", "cred.json", "cred.json")
-    global ACCESS_KEY
-    global SECRET_KEY
-    global SESSION_TOKEN
-    global REGION
-    client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
-    queue = client.get_queue_url(QueueName='video_queue')
-    results = dict()
-    # Process messages by printing out body and optional author name
-    while True:
-        li = []
-        try:
-            li = client.receive_message(QueueUrl=queue['QueueUrl'])['Messages']
-            print(li)
-        except Exception as e:
-            pass
-        for message in li:
-            logging.info(message)
-            object_name, bucket_name = message['Body'].split(':')
-            logging.info("Processing " + object_name + " " +bucket_name)
-            temp_file_name = object_name + '.h264'
-            try:
-                downloadFile(bucket_name, object_name, temp_file_name)
-                FILENAME = "results.txt"
-                try:
-                    command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
-                    # command="ping google.com"
-                    logging.info("Darknet started " + command )
-                    start_time = time.time()
-                    process = subprocess.Popen(command, shell=True)
-                    process.wait()
-                    logging.info("Darknet finished")
-                    logging.info("--- %s seconds ---" % (time.time() - start_time))
-                    object_list = get_objects(FILENAME)
-                    results[object_name] = object_list
-                    yield True, {object_name:object_list}
-                except Exception as e:
-                    logging.error(e)
-                    yield False, {}
-            except Exception as e:
-                logging.error(e)
-                yield False, {}
-            client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
-        
+def processMessages(object_name):
+    temp_file_name = "temp.h264"
+    bucket_name = "worm4047bucket1"
+    downloadFile(bucket_name, object_name, temp_file_name)
+    FILENAME = "results.txt"
+    try:
+        # command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+        command="ping google.com"
+        logging.info("Darknet started " + command )
+        start_time = time.time()
+        process = subprocess.Popen(command, shell=True)
+        process.wait()
+        logging.info("Darknet finished")
+        logging.info("--- %s seconds ---" % (time.time() - start_time))
+        object_list = get_objects(FILENAME)
+        results[object_name] = object_list
+        yield True, {object_name:object_list}
+    except Exception as e:
+        logging.error(e)
+        yield False, {}
+    except Exception as e:
+        logging.error(e)
+    yield False, {}
+            # client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
             
-        
-
 if __name__ == '__main__':
-    vdisplay = Xvfb()
-    vdisplay.start()
-    # exportDisplay()
+    objectname = sys.argv[1]
     cred_file = "cred.json"
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
     # downloadFile("wormcredentials", cred_file, cred_file)
@@ -146,17 +115,16 @@ if __name__ == '__main__':
         SESSION_TOKEN = data['aws_session_token']
         REGION = data['region']
 
-    os.chdir(PATH_DARKNET)
+    # os.chdir(PATH_DARKNET)
     res = []
     BUCKET_NAME = "worm4047bucket2"
-    for status, obj in processMessages():
-        if(not status):
-            logging.info("Got Error")
-        else:
-            for key in obj:
-                with open(key+'.json', 'w') as outfile:
-                    json.dump(obj, outfile)
-                upload_file(key+'.json', BUCKET_NAME, key)
+    status, obj = processMessages(objectname)
+    if(not status):
+        logging.info("Got Error")
+    else:
+        for key in obj:
+            with open(key+'.json', 'w') as outfile:
+                json.dump(obj, outfile)
+            upload_file(key+'.json', BUCKET_NAME, key)
 
-    os.chdir(PATH_PROJ)
-    vdisplay.stop()
+    # os.chdir(PATH_PROJ)
