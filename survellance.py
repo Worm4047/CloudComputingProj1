@@ -45,4 +45,5 @@ while flag == 0:
             process.wait()
             os.chdir(PATH_CLOUD)
             process = subprocess.Popen('python uploadFile.py ' + PATH_FACEDETECT+'/v.h264', shell=True)
+            os.chdir(PATH_FACEDETECT)
         time.sleep(0.1)
