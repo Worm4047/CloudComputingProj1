@@ -83,7 +83,7 @@ def addToSqs(object_name, bucket_name):
     global REGION
     sqs = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     print("Adding to sqs")
-    queue = sqs.get_queue_url(QueueName='video_queue')
+    queue = sqs.get_queue_url(QueueName='video-process')
     try:
         sqs.send_message(QueueUrl=queue['QueueUrl'], MessageBody=object_name + ':' + bucket_name)
     except Exception as e:
