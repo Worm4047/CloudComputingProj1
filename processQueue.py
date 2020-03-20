@@ -22,7 +22,7 @@ def downloadFile(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
     global REGION
     # client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
 	# client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
-    client = boto3.client('s3')
+    client = boto3.client('s3', region_name=REGION)
     client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
 
 def generate_random_object_name(stringLength = 10):
@@ -34,7 +34,7 @@ def upload_file(file_name, bucket, object_name=None):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('s3')
+    client = boto3.client('s3',region_name=REGION)
     # client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     try:
         response = client.upload_file(file_name, bucket, object_name, Callback=ProgressPercentage(file_name))
@@ -77,7 +77,7 @@ def processMessages():
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('sqs')
+    client = boto3.client('sqs', region_name=REGION)
     # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     queue = client.get_queue_url(QueueName='video-process')
     results = dict()
