@@ -20,8 +20,9 @@ def downloadFile(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
+    # client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
 	# client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
+    client = boto3.client('s3')
     client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
 
 def generate_random_object_name(stringLength = 10):
@@ -33,7 +34,8 @@ def upload_file(file_name, bucket, object_name=None):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
+    client = boto3.client('s3')
+    # client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     try:
         response = client.upload_file(file_name, bucket, object_name, Callback=ProgressPercentage(file_name))
     except ClientError as e:
@@ -75,7 +77,8 @@ def processMessages():
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
+    client = boto3.client('sqs')
+    # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     queue = client.get_queue_url(QueueName='video-process')
     results = dict()
     # Process messages by printing out body and optional author name
@@ -83,7 +86,7 @@ def processMessages():
         li = []
         try:
             print("Looking for messages")
-            li = client.receive_message(QueueUrl=queue['QueueUrl'])['Messages']
+            li = client.receive_message(QueueUrl=queue['QueueUrl'], VisibilityTimeout=20)['Messages']
             if not li or len(li) == 0:
                 return
         except Exception as e:
@@ -118,9 +121,6 @@ def processMessages():
             client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
             time.sleep(10)
         
-            
-        
-
 if __name__ == '__main__':
     cred_file = "cred.json"
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
