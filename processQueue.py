@@ -86,7 +86,7 @@ def processMessages():
         li = []
         try:
             print("Looking for messages")
-            li = client.receive_message(QueueUrl=queue['QueueUrl'], VisibilityTimeout=240)['Messages']
+            li = client.receive_message(QueueUrl=queue['QueueUrl'], VisibilityTimeout=600)['Messages']
             if not li or len(li) == 0:
                 return
         except Exception as e:
