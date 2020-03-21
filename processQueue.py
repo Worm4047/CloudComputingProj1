@@ -79,7 +79,11 @@ def processMessages():
     global REGION
     client = boto3.client('sqs', region_name=REGION)
     # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
-    queue = client.get_queue_url(QueueName='video-process')
+    queue = ''
+    try:
+        queue = client.get_queue_url(QueueName='video-process')
+    except Exception as e:
+        return
     results = dict()
     # Process messages by printing out body and optional author name
     while True:
