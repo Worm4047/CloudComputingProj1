@@ -37,6 +37,7 @@ def handleVisibility(client, queue_url, reciept_handle, value):
             ReceiptHandle=reciept_handle,
             VisibilityTimeout=value
         )
+        print(response)
     except Exception as e:
         print(e)
 
