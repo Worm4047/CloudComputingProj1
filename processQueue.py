@@ -6,6 +6,7 @@ import string
 import random
 import time
 import os
+import sys
 import time
 import json
 from ProgressPercentage import *
@@ -72,32 +73,40 @@ def get_objects(FILENAME):
         result[key] = (object_map)
     return {'results' : [result]}
 
-def processMessages():
+def processMessages(obj):
     global ACCESS_KEY
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
     client = boto3.client('sqs', region_name=REGION)
+    firstTime = True
     # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     queue = ''
     try:
         queue = client.get_queue_url(QueueName='video-process')
     except Exception as e:
+        print(e)
         return
     results = dict()
+    
     # Process messages by printing out body and optional author name
     while True:
         li = []
-        try:
-            print("Looking for messages")
-            li = client.receive_message(QueueUrl=queue['QueueUrl'], VisibilityTimeout=600)['Messages']
-            if not li or len(li) == 0:
-                return
-        except Exception as e:
-            return 
+        if firstTime:
+            li = [{'Body':obj}]
+            firstTime = False
+        else:
+            try:
+                print("Looking for messages")
+                li = client.receive_message(QueueUrl=queue['QueueUrl'], VisibilityTimeout=600)['Messages']
+                if not li or len(li) == 0:
+                    return
+            except Exception as e:
+                return 
         print("Processing Messages")
         for message in li:
             logging.info(message)
+            print(message)
             object_name, bucket_name = message['Body'].split(':')
             logging.info("Processing " + object_name + " " +bucket_name)
             temp_file_name = object_name + '.h264'
@@ -117,12 +126,14 @@ def processMessages():
                     results[object_name] = object_list
                     yield True, {object_name:object_list}
                 except Exception as e:
+                    print(e)
                     logging.error(e)
                     yield False, {}
             except Exception as e:
+                print(e)
                 logging.error(e)
                 yield False, {}
-            client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
+            # client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
             time.sleep(10)
         
 if __name__ == '__main__':
@@ -136,10 +147,12 @@ if __name__ == '__main__':
         SESSION_TOKEN = data['aws_session_token']
         REGION = data['region']
 
-    os.chdir(PATH_DARKNET)
+    # os.chdir(PATH_DARKNET)
     res = []
+    
     BUCKET_NAME = "worm4047bucket2"
-    for val in processMessages():
+    print(sys.argv[1])
+    for val in processMessages(sys.argv[1]):
         if val is None:
             print("Done processing")
             logging.info("Done Processing")
@@ -152,4 +165,4 @@ if __name__ == '__main__':
                     json.dump(obj, outfile)
                 upload_file(key+'.json', BUCKET_NAME, key)
 
-    os.chdir(PATH_PROJ)
+    # os.chdir(PATH_PROJ)
