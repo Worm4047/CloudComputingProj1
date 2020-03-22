@@ -96,6 +96,7 @@ def processMessages(obj, reciept_handle):
     try:
         queue = client.get_queue_url(QueueName='video-process')
     except Exception as e:
+        handleVisibility(client, "https://sqs.us-east-1.amazonaws.com/056594258736/video-process", reciept_handle, 0)
         print(e)
         return
     results = dict()
