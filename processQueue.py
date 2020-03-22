@@ -83,7 +83,7 @@ def get_objects(FILENAME):
         result[key] = (object_map)
     return {'results' : [result]}
 
-def processMessages(obj):
+def processMessages(objd, reciept_handle):
     global ACCESS_KEY
     global SECRET_KEY
     global SESSION_TOKEN
@@ -103,7 +103,7 @@ def processMessages(obj):
     while True:
         li = []
         if firstTime:
-            li = [{'Body':obj}]
+            li = [{'Body':obj, 'ReceiptHandle':reciept_handle}]
             firstTime = False
         else:
             try:
@@ -163,8 +163,8 @@ if __name__ == '__main__':
     res = []
     
     BUCKET_NAME = "worm4047bucket2"
-    print(sys.argv[1])
-    for val in processMessages(sys.argv[1]):
+    print(sys.argv[1], sys.argv[2])
+    for val in processMessages(sys.argv[1], sys.argv[2]):
         if val is None:
             print("Done processing")
             logging.info("Done Processing")
