@@ -83,7 +83,7 @@ def get_objects(FILENAME):
         result[key] = (object_map)
     return {'results' : [result]}
 
-def processMessages(objd, reciept_handle):
+def processMessages(obj, reciept_handle):
     global ACCESS_KEY
     global SECRET_KEY
     global SESSION_TOKEN
