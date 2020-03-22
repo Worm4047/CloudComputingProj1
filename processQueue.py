@@ -145,7 +145,7 @@ def processMessages(obj, reciept_handle):
                 print(e)
                 logging.error(e)
                 yield False, {}
-            # client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
+            client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
             time.sleep(10)
         
 if __name__ == '__main__':
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         SESSION_TOKEN = data['aws_session_token']
         REGION = data['region']
 
-    # os.chdir(PATH_DARKNET)
+    os.chdir(PATH_DARKNET)
     res = []
     
     BUCKET_NAME = "worm4047bucket2"
@@ -177,4 +177,4 @@ if __name__ == '__main__':
                     json.dump(obj, outfile)
                 upload_file(key+'.json', BUCKET_NAME, key)
 
-    # os.chdir(PATH_PROJ)
+    os.chdir(PATH_PROJ)
