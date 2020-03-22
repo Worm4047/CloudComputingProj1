@@ -30,6 +30,16 @@ def generate_random_object_name(stringLength = 10):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
+def handleVisibility(client, queue_url, reciept_handle, value):
+    try:
+        response = client.change_message_visibility(
+            QueueUrl= queue_url,
+            ReceiptHandle=reciept_handle,
+            VisibilityTimeout=value
+        )
+    except Exception as e:
+        print(e)
+
 def upload_file(file_name, bucket, object_name=None):
     global ACCESS_KEY
     global SECRET_KEY
@@ -126,10 +136,12 @@ def processMessages(obj):
                     results[object_name] = object_list
                     yield True, {object_name:object_list}
                 except Exception as e:
+                    handleVisibility(client,queue['QueueUrl'], message['ReceiptHandle'], 0)
                     print(e)
                     logging.error(e)
                     yield False, {}
             except Exception as e:
+                handleVisibility(client,queue['QueueUrl'], message['ReceiptHandle'], 0)
                 print(e)
                 logging.error(e)
                 yield False, {}
