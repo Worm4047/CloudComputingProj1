@@ -1,9 +1,6 @@
-
 {
-	"aws_access_key_id":"ASIAQ2LKH3MYMEIZEMEN",
-	"aws_secret_access_key":"AhGkf/5CMh1zTMgUcYXDA1IlK4x3/wLxejSdNPyU",
-	"aws_session_token":"FwoGZXIvYXdzEH4aDF2u0wGd/HB9q2iZqSK/AdyNBXXX/6Is4jo0HcclWxdZl1NYKYH/bxkf4GRCl6dXV5yM0/w4v3qqBXF780/6d+bEQ1a0BwW+Z07QwAv6SBMPWnoB6xngY4z8zsMMwiYiqw7JmsLLTb9+NxELUimoyHRi2n6yGIoT1EDG1d1RMDl6MisRVLGtxY/zK51RnpCWlB/7wOcCOUHbfSu4O16wDSOhSeaf2L45/MjCPzXKp14Ar2fkzn+1UzVAEwMuZe2rO79RhkVjcDFLZ4pJDgdRKJnn6fMFMi3STAHaaQuZ8023sCHxuJgS3s4CsDRJOuqIi7UV+WcEg60Eku0R5yTtJfUFrss=",
-	"region":"us-east-1"
-}
-
-
+	"aws_access_key_id": "ASIAQ2LKH3MYHABQ5B4T",
+	"aws_secret_access_key": "jl3piqBt1zIA3N/0U/WFR4+k+HiJOX1ewy/RRhp1",
+	"aws_session_token": "FwoGZXIvYXdzEID//////////wEaDOdF16CoikOzrRvB0CK/AWafw8WHoH+Ikuefcb2JLpJKxJio1jlRm4iIENXoUHxELZ2xLwOAnFtougbD9iM0Mxg3PRXCo3Uyyn92dKivvgBlPOFXBmP6gT8uEuavvCO3u1G+ST0FfoXMLFwKPCwPiFz0dE87OwJBdHCEWrzYCot0v40/jT45zkQ48IPjTtj30/IP231z+dfLM3Euk6fU40yv4hkkdjLYye+sVNTTaliWfY4VyBt4bNOeQMMZb54KAkDq6pdvdGbjx+FXOFnLKKKO6vMFMi04ikML/b/9AD1NaOnBcP4V24B+YZ25q3vJg7E6m9BbvuOSmO4m3Z+N28JdJuw=",
+	"region": "us-east-1"
+	}
