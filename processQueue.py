@@ -92,13 +92,13 @@ def processMessages(obj, reciept_handle, firstTime = True):
     client = boto3.client('sqs', region_name=REGION)
     
     # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
-    queue = ''
-    try:
-        queue = client.get_queue_url(QueueName='video-process')
-    except Exception as e:
-        handleVisibility(client, "https://sqs.us-east-1.amazonaws.com/056594258736/video-process", reciept_handle, 0)
-        print(e)
-        return
+    queueurl = 'https://sqs.us-east-1.amazonaws.com/056594258736/video-process'
+    # try:
+    #     queue = client.get_queue_url()
+    # except Exception as e:
+    #     handleVisibility(client, queueurl, reciept_handle, 0)
+    #     print(e)
+    #     return
     results = dict()
     
     # Process messages by printing out body and optional author name
@@ -110,7 +110,7 @@ def processMessages(obj, reciept_handle, firstTime = True):
         else:
             try:
                 print("Looking for messages")
-                li = client.receive_message(QueueUrl=queue['QueueUrl'], VisibilityTimeout=600)['Messages']
+                li = client.receive_message(QueueUrl=queueurl, VisibilityTimeout=600)['Messages']
                 if not li or len(li) == 0:
                     return
             except Exception as e:
