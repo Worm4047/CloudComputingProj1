@@ -84,6 +84,15 @@ def get_objects(FILENAME):
         result[key] = (object_map)
     return {'results' : [result]}
 
+def deleteMsg(client, queueurl, message):
+    while True:
+        try:
+            client.delete_message(QueueUrl=queueurl,ReceiptHandle=message['ReceiptHandle'])
+            break
+        except Exception as e:
+            print(e)
+        time.sleep(2)
+
 def processMessages(obj, reciept_handle, firstTime = True):
     global ACCESS_KEY
     global SECRET_KEY
@@ -149,8 +158,8 @@ def processMessages(obj, reciept_handle, firstTime = True):
                 print(e)
                 logging.error(e)
                 yield False, {}
-            client.delete_message(QueueUrl=queueurl,ReceiptHandle=message['ReceiptHandle'])
-            time.sleep(10)
+            deleteMsg(client, queueurl, message)
+            time.sleep(3)
         
 if __name__ == '__main__':
     cred_file = "cred.json"
