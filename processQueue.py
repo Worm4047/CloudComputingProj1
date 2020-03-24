@@ -22,7 +22,6 @@ def downloadFile(BUCKET_NAME, OBJECT_NAME, FILE_NAME):
     global SESSION_TOKEN
     global REGION
     # client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
-	# client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
     client = boto3.client('s3', region_name=REGION)
     client.download_file(BUCKET_NAME, OBJECT_NAME, FILE_NAME)
 
@@ -31,6 +30,7 @@ def generate_random_object_name(stringLength = 10):
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 def handleVisibility(client, queue_url, reciept_handle, value):
+    logging.info("Handing visibility for ", reciept_handle)
     try:
         response = client.change_message_visibility(
             QueueUrl= queue_url,
@@ -84,13 +84,13 @@ def get_objects(FILENAME):
         result[key] = (object_map)
     return {'results' : [result]}
 
-def processMessages(obj, reciept_handle):
+def processMessages(obj, reciept_handle, firstTime = True):
     global ACCESS_KEY
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
     client = boto3.client('sqs', region_name=REGION)
-    firstTime = True
+    
     # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     queue = ''
     try:
@@ -123,11 +123,13 @@ def processMessages(obj, reciept_handle):
             logging.info("Processing " + object_name + " " +bucket_name)
             temp_file_name = object_name + '.h264'
             try:
+                print("Download file", bucket_name, object_name, temp_file_name)
                 downloadFile(bucket_name, object_name, temp_file_name)
                 FILENAME = "results.txt"
                 try:
                     command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
                     # command="ping google.com"
+                    print("Command executing")
                     logging.info("Darknet started " + command )
                     start_time = time.time()
                     process = subprocess.Popen(command, shell=True)
@@ -153,7 +155,7 @@ def processMessages(obj, reciept_handle):
 if __name__ == '__main__':
     cred_file = "cred.json"
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
-    # downloadFile("wormcredentials", cred_file, cred_file)
+
     with open(cred_file) as f:
         data = json.load(f)
         ACCESS_KEY = data['aws_access_key_id']
@@ -166,7 +168,7 @@ if __name__ == '__main__':
     
     BUCKET_NAME = "worm4047bucket2"
     print(sys.argv[1], sys.argv[2])
-    for val in processMessages(sys.argv[1], sys.argv[2]):
+    for val in processMessages(sys.argv[1], sys.argv[2], False):
         if val is None:
             print("Done processing")
             logging.info("Done Processing")
