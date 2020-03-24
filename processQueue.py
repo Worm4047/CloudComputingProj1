@@ -168,7 +168,7 @@ if __name__ == '__main__':
     
     BUCKET_NAME = "worm4047bucket2"
     print(sys.argv[1], sys.argv[2])
-    for val in processMessages(sys.argv[1], sys.argv[2], False):
+    for val in processMessages(sys.argv[1], sys.argv[2], True):
         if val is None:
             print("Done processing")
             logging.info("Done Processing")
