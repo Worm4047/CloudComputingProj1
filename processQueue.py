@@ -94,7 +94,7 @@ def processMessages(obj, reciept_handle, firstTime = True):
     # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     queueurl = 'https://sqs.us-east-1.amazonaws.com/056594258736/video-process'
     # try:
-    #     queue = client.get_queue_url()
+    #     queue = client.get_queue_url(queuenae="video-process")
     # except Exception as e:
     #     handleVisibility(client, queueurl, reciept_handle, 0)
     #     print(e)
@@ -140,16 +140,16 @@ def processMessages(obj, reciept_handle, firstTime = True):
                     results[object_name] = object_list
                     yield True, {object_name:object_list}
                 except Exception as e:
-                    handleVisibility(client,queue['QueueUrl'], message['ReceiptHandle'], 0)
+                    handleVisibility(client,queueurl, message['ReceiptHandle'], 0)
                     print(e)
                     logging.error(e)
                     yield False, {}
             except Exception as e:
-                handleVisibility(client,queue['QueueUrl'], message['ReceiptHandle'], 0)
+                handleVisibility(client,queueurl, message['ReceiptHandle'], 0)
                 print(e)
                 logging.error(e)
                 yield False, {}
-            client.delete_message(QueueUrl=queue['QueueUrl'],ReceiptHandle=message['ReceiptHandle'])
+            client.delete_message(QueueUrl=queueurl,ReceiptHandle=message['ReceiptHandle'])
             time.sleep(10)
         
 if __name__ == '__main__':
