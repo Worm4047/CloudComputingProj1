@@ -30,6 +30,13 @@ def generate_random_object_name(stringLength = 10):
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 def handleVisibility(client, queue_url, reciept_handle, value):
+    global ACCESS_KEY
+    global SECRET_KEY
+    global SESSION_TOKEN
+    global REGION
+    client = boto3.client('s3',region_name=REGION)
+    # client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
+
     logging.info("Handing visibility for ", reciept_handle)
     try:
         response = client.change_message_visibility(
@@ -58,42 +65,55 @@ def upload_file(file_name, bucket, object_name=None):
 
 def get_objects(FILENAME):
     logging.info(os.getcwd())
-    f = open(FILENAME, 'r')
-    temp_data = f.read().split('\n')
-    data = dict()
-    currfps = 0
-    obj_in_frame = []
-    for lines in temp_data:
-        lines = lines.replace('\n', "")
-        if 'FPS' in lines:
-            if currfps > 0 and len(obj_in_frame) > 0:
-                data[currfps] = (obj_in_frame)
-                obj_in_frame = []
-            currfps += 1
-        elif '%' in lines:
-            obj_in_frame.append(lines)
     result = dict()
+    try:
+        f = open(FILENAME, 'r')
+        temp_data = f.read().split('\n')
+        data = dict()
+        currfps = 0
+        obj_in_frame = []
+        for lines in temp_data:
+            lines = lines.replace('\n', "")
+            if 'FPS' in lines:
+                if currfps > 0 and len(obj_in_frame) > 0:
+                    data[currfps] = (obj_in_frame)
+                    obj_in_frame = []
+                currfps += 1
+            elif '%' in lines:
+                obj_in_frame.append(lines)
+        
 
-    for key in data:
-        object_map = []
-        for obj in data[key]:
-            obj_name, obj_conf = obj.split()
-            obj_name = (obj_name.replace(':',''))
-            obj_conf = (int)(obj_conf.replace('%',''))
-            object_map.append({obj_name:(obj_conf*1.0)/100})
-        result[key] = (object_map)
+        for key in data:
+            object_map = []
+            for obj in data[key]:
+                obj_name, obj_conf = obj.split()
+                obj_name = (obj_name.replace(':',''))
+                obj_conf = (int)(obj_conf.replace('%',''))
+                object_map.append({obj_name:(obj_conf*1.0)/100})
+            result[key] = (object_map)
+    except Exception as e:
+        pass
     return {'results' : [result]}
 
 def deleteMsg(client, queueurl, message):
+    print("Deleting  Messages ", message['ReceiptHandle'])
+    global ACCESS_KEY
+    global SECRET_KEY
+    global SESSION_TOKEN
+    global REGION
+    client = boto3.client('sqs', region_name=REGION)
+    
+    # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
+
     while True:
         try:
             client.delete_message(QueueUrl=queueurl,ReceiptHandle=message['ReceiptHandle'])
             break
         except Exception as e:
             print(e)
-        time.sleep(2)
+        time.sleep(0.5)
 
-def processMessages(obj, reciept_handle, firstTime = True):
+def processSingleMessage(obj, reciept_handle):
     global ACCESS_KEY
     global SECRET_KEY
     global SESSION_TOKEN
@@ -102,65 +122,74 @@ def processMessages(obj, reciept_handle, firstTime = True):
     
     # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
     queueurl = 'https://sqs.us-east-1.amazonaws.com/056594258736/video-process'
-    # try:
-    #     queue = client.get_queue_url(queuenae="video-process")
-    # except Exception as e:
-    #     handleVisibility(client, queueurl, reciept_handle, 0)
-    #     print(e)
-    #     return
     results = dict()
-    
-    # Process messages by printing out body and optional author name
-    while True:
-        li = []
-        if firstTime:
-            li = [{'Body':obj, 'ReceiptHandle':reciept_handle}]
-            firstTime = False
-        else:
+
+    li = []
+    li = [{'Body':obj, 'ReceiptHandle':reciept_handle}]
+    firstTime = False
+
+    print("Processing Messages")
+    for message in li:
+        logging.info(message)
+        print(message)
+        object_name, bucket_name = message['Body'].split(':')
+        logging.info("Processing " + object_name + " " +bucket_name)
+        temp_file_name = object_name + '.h264'
+        try:
+            print("Download file", bucket_name, object_name, temp_file_name)
+            downloadFile(bucket_name, object_name, temp_file_name)
+            FILENAME = "results.txt"
             try:
-                print("Looking for messages")
-                li = client.receive_message(QueueUrl=queueurl, VisibilityTimeout=600)['Messages']
-                if not li or len(li) == 0:
-                    return
-            except Exception as e:
-                return 
-        print("Processing Messages")
-        for message in li:
-            logging.info(message)
-            print(message)
-            object_name, bucket_name = message['Body'].split(':')
-            logging.info("Processing " + object_name + " " +bucket_name)
-            temp_file_name = object_name + '.h264'
-            try:
-                print("Download file", bucket_name, object_name, temp_file_name)
-                downloadFile(bucket_name, object_name, temp_file_name)
-                FILENAME = "results.txt"
-                try:
-                    command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
-                    # command="ping google.com"
-                    print("Command executing")
-                    logging.info("Darknet started " + command )
-                    start_time = time.time()
-                    process = subprocess.Popen(command, shell=True)
-                    process.wait()
-                    logging.info("Darknet finished")
-                    logging.info("--- %s seconds ---" % (time.time() - start_time))
-                    object_list = get_objects(FILENAME)
-                    results[object_name] = object_list
-                    yield True, {object_name:object_list}
-                except Exception as e:
-                    handleVisibility(client,queueurl, message['ReceiptHandle'], 0)
-                    print(e)
-                    logging.error(e)
-                    yield False, {}
+                command = "./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weights " + temp_file_name + " > results.txt" 
+                # command="ping google.com"
+                print("Command executing")
+                logging.info("Darknet started " + command )
+                start_time = time.time()
+                process = subprocess.Popen(command, shell=True)
+                process.wait()
+                logging.info("Darknet finished")
+                logging.info("--- %s seconds ---" % (time.time() - start_time))
+                object_list = get_objects(FILENAME)
+                results[object_name] = object_list
+                deleteMsg(client, queueurl, message)
+                return True, {object_name:object_list}
             except Exception as e:
                 handleVisibility(client,queueurl, message['ReceiptHandle'], 0)
                 print(e)
                 logging.error(e)
-                yield False, {}
-            deleteMsg(client, queueurl, message)
-            time.sleep(3)
+                return False, {}
+        except Exception as e:
+            handleVisibility(client,queueurl, message['ReceiptHandle'], 0)
+            print(e)
+            logging.error(e)
+            return False, {}
         
+            # time.sleep(3)
+        
+
+def processMessages():
+    global ACCESS_KEY
+    global SECRET_KEY
+    global SESSION_TOKEN
+    global REGION
+    client = boto3.client('sqs', region_name=REGION)
+    
+    # client = boto3.client('sqs',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
+    queueurl = 'https://sqs.us-east-1.amazonaws.com/056594258736/video-process'
+    results = dict()
+    
+    try:
+        print("Looking for messages")
+        li = client.receive_message(QueueUrl=queueurl, VisibilityTimeout=600)['Messages']
+        if not li or len(li) == 0:
+            return -1
+    except Exception as e:
+        return -1
+    for message in li:
+        return processSingleMessage(message['Body'], message['ReceiptHandle'])
+
+
+
 if __name__ == '__main__':
     cred_file = "cred.json"
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
@@ -174,15 +203,26 @@ if __name__ == '__main__':
 
     os.chdir(PATH_DARKNET)
     res = []
-    
     BUCKET_NAME = "worm4047bucket2"
+
     print(sys.argv[1], sys.argv[2])
-    for val in processMessages(sys.argv[1], sys.argv[2], True):
-        if val is None:
+    firstTime = True
+    while True:
+        val = None
+        if firstTime:
+            val = processSingleMessage(sys.argv[1], sys.argv[2])
+            firstTime = False
+        else:
+            val = processMessages()
+
+        if val == -1:
             print("Done processing")
             logging.info("Done Processing")
+            break
+
         elif(not val[0]):
             logging.info("Got Error")
+
         else:
             status, obj = val[0], val[1]
             for key in obj:
