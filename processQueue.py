@@ -37,7 +37,7 @@ def handleVisibility(client, queue_url, reciept_handle, value):
     client = boto3.client('s3',region_name=REGION)
     # client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
 
-    logging.info("Handing visibility for ", reciept_handle)
+    logging.info("Handing visibility ")
     try:
         response = client.change_message_visibility(
             QueueUrl= queue_url,
@@ -126,7 +126,6 @@ def processSingleMessage(obj, reciept_handle):
 
     li = []
     li = [{'Body':obj, 'ReceiptHandle':reciept_handle}]
-    firstTime = False
 
     print("Processing Messages")
     for message in li:
@@ -187,8 +186,22 @@ def processMessages():
     except Exception as e:
         return -1
     for message in li:
-        return processSingleMessage(message['Body'], message['ReceiptHandle'])
-
+        val = None
+        while True:
+            val = processSingleMessage(message['Body'], message['ReceiptHandle'])
+            if val == -1:
+                print("Done processing")
+                logging.info("Done Processing")
+                break
+            elif(not val[0]):
+                logging.info("Got Error")
+            else:
+                status, obj = val[0], val[1]
+                for key in obj:
+                    with open(key+'.json', 'w') as outfile:
+                        json.dump(obj, outfile)
+                    upload_file(key+'.json', BUCKET_NAME, key)          
+    return -1
 
 
 if __name__ == '__main__':
@@ -213,6 +226,11 @@ if __name__ == '__main__':
         if firstTime:
             val = processSingleMessage(sys.argv[1], sys.argv[2])
             firstTime = False
+            status, obj = val[0], val[1]
+            for key in obj:
+                with open(key+'.json', 'w') as outfile:
+                    json.dump(obj, outfile)
+                upload_file(key+'.json', BUCKET_NAME, key)
         else:
             val = processMessages()
 
@@ -224,11 +242,5 @@ if __name__ == '__main__':
         elif(not val[0]):
             logging.info("Got Error")
 
-        else:
-            status, obj = val[0], val[1]
-            for key in obj:
-                with open(key+'.json', 'w') as outfile:
-                    json.dump(obj, outfile)
-                upload_file(key+'.json', BUCKET_NAME, key)
-
+        
     os.chdir(PATH_PROJ)
