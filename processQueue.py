@@ -152,6 +152,7 @@ def processSingleMessage(obj, reciept_handle):
                 object_list = get_objects(FILENAME)
                 results[object_name] = object_list
                 deleteMsg(client, queueurl, message)
+                os.remove("processQueue.log")
                 return True, {object_name:object_list}
             except Exception as e:
                 handleVisibility(client,queueurl, message['ReceiptHandle'], 0)
