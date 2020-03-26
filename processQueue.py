@@ -231,7 +231,8 @@ if __name__ == '__main__':
         # Check if first_time i.e executed by master
         if first_time:
             li = [{'Body':sys.argv[1], 'ReceiptHandle':sys.argv[2]}]
-            res = processMessage(li)
+            # res = processMessage(li)
+            time.sleep(300)
             first_time = False
         else:
             # Get messages again
@@ -241,7 +242,8 @@ if __name__ == '__main__':
                 print("No More messages to process")
                 break
             else:
-                res = processMessage(li['Messages'])
+                # res = processMessage(li['Messages'])
+                time.sleep(300)
     
     os.chdir(PATH_PROJ)
 
