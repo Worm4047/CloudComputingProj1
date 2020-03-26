@@ -52,7 +52,7 @@ def upload_file(file_name, bucket, object_name=None):
     return True, object_name
 
 def addToSqs(object_name, bucket_name):
-    cred_file = "cred.json"
+    cred_file = os.path.abspath('cred.json')
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
 
     with open(cred_file) as f:
@@ -90,14 +90,14 @@ if __name__ =='__main__':
 
     BUCKET_NAME = "worm4047bucket1"
     VIDEO_FILE = sys.argv[1]
+    for _ in range():
+        logging.info("Uploading to S3")
+        result, obj = upload_file(VIDEO_FILE, BUCKET_NAME)
 
-    logging.info("Uploading to S3")
-    result, obj = upload_file(VIDEO_FILE, BUCKET_NAME)
-
-    print(result, obj)
-    if(result):
-        logging.info("Done ", obj)
-    else:
-        logging.info("Upload to S3 failed")
-    logging.info("--- %s seconds ---" % (time.time() - start_time))
+        print(result, obj)
+        if(result):
+            logging.info("Done ", obj)
+        else:
+            logging.info("Upload to S3 failed")
+        logging.info("--- %s seconds ---" % (time.time() - start_time))
     
