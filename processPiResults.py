@@ -12,9 +12,10 @@ import json
 from ProgressPercentage import *
 import logging
 
-OUTPUT_FILENAME = "results.txt"
+
 
 def upload_file(file_name, object_name=None):
+    RESULT_BUCKET_NAME = "worm4047bucket2"
     s3_client = get_client('s3')
     max_retries = 5
     while max_retries > 0:
@@ -90,8 +91,11 @@ def get_objects(FILENAME):
     return {'results' : [result]}
 
 if __name__ == '__main__':
+    ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
+    OUTPUT_FILENAME = "results.txt"
+    PATH_DARKNET = "/home/pi/darknet/"
     get_creds()
-    object_list = get_objects(OUTPUT_FILENAME)
+    object_list = get_objects(PATH_DARKNET + OUTPUT_FILENAME)
     results = dict()
     results[sys.argv[1]] = object_list
     upload_results(results)
