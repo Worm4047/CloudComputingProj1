@@ -41,8 +41,8 @@ def get_client(type):
     global SECRET_KEY
     global SESSION_TOKEN
     global REGION
-    # client = boto3.client(type, region_name=REGION)
-    return boto3.client(type,aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
+    client = boto3.client(type, region_name=REGION)
+    # return boto3.client(type,aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY,aws_session_token=SESSION_TOKEN,region_name=REGION)
 
 def get_objects(FILENAME):
     logging.info(os.getcwd())
