@@ -30,7 +30,7 @@ def upload_file(file_name, bucket, object_name=None):
     if object_name == None:
         object_name = generate_random_object_name()
 
-    cred_file = "cred.json"
+    cred_file = os.path.abspath('cred.json')
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
 
     with open(cred_file) as f:
@@ -78,7 +78,7 @@ def addToSqs(object_name, bucket_name):
 
 if __name__ =='__main__':
     start_time = time.time()
-    cred_file = "cred.json"
+    cred_file = os.path.abspath('cred.json')
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
 
     with open(cred_file) as f:
