@@ -226,13 +226,18 @@ if __name__ == '__main__':
     sqs_client = get_client('sqs')
     first_time = True
 
+    # Count processed
+    count = 0
+
     while True:
 
         # Check if first_time i.e executed by master
         if first_time:
             li = [{'Body':sys.argv[1], 'ReceiptHandle':sys.argv[2]}]
-            # res = processMessage(li)
-            time.sleep(300)
+            res = processMessage(li)
+            # time.sleep(300)
+            if res:
+                count += 1
             first_time = False
         else:
             # Get messages again
@@ -242,9 +247,12 @@ if __name__ == '__main__':
                 print("No More messages to process")
                 break
             else:
-                # res = processMessage(li['Messages'])
-                time.sleep(300)
-    
+                res = processMessage(li['Messages'])
+                if res:
+                    count += 1
+                # time.sleep(300)
+    print(" \n\n :::::::::: Number of messages processed  ::::::::::::::: \n", count)
+    print("\n\n")
     os.chdir(PATH_PROJ)
 
             
