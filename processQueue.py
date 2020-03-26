@@ -238,6 +238,9 @@ if __name__ == '__main__':
             # time.sleep(300)
             if res:
                 count += 1
+            else:
+                print("\n\n UNABLE TO PROCESS \n\n")
+                break
             first_time = False
         else:
             # Get messages again
@@ -250,6 +253,9 @@ if __name__ == '__main__':
                 res = processMessage(li['Messages'])
                 if res:
                     count += 1
+                else:
+                    print("\n\n UNABLE TO PROCESS \n\n")
+                    break
                 # time.sleep(300)
     print(" \n\n :::::::::: Number of messages processed  ::::::::::::::: \n", count)
     print("\n\n")
