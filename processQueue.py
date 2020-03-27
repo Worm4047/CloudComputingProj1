@@ -47,6 +47,7 @@ def get_client(type):
 def get_objects(FILENAME):
     logging.info(os.getcwd())
     result = dict()
+    object_set = set()
     try:
         f = open(FILENAME, 'r')
         temp_data = f.read().split('\n')
@@ -68,13 +69,15 @@ def get_objects(FILENAME):
             object_map = []
             for obj in data[key]:
                 obj_name, obj_conf = obj.split()
+                object_set.add(obj_name)
                 obj_name = (obj_name.replace(':',''))
                 obj_conf = (int)(obj_conf.replace('%',''))
                 object_map.append({obj_name:(obj_conf*1.0)/100})
             result[key] = (object_map)
     except Exception as e:
         pass
-    return {'results' : [result]}
+    # return {'results' : [result]}
+    return list(object_set)
 
 '''
 
