@@ -29,7 +29,7 @@ def upload_file(file_name, object_name=None):
 
 def upload_results(object_name, results):
     file_name = object_name
-    with open(file_name, 'r') as f:
+    with open(file_name, 'w+') as f:
         f.write(results)
     return upload_file(file_name, object_name)
 

@@ -97,12 +97,11 @@ def upload_file(file_name, object_name=None):
         max_retries -= 1
     return max_retries > 0
 
-def upload_results(results):
-    for key in results:
-        with open(key+'.json', 'w') as outfile:
-            json.dump(results, outfile)
-        return upload_file(key+'.json', key)
-
+def upload_results(object_name, results):
+    file_name = object_name
+    with open(file_name, 'w+') as f:
+        f.write(results)
+    return upload_file(file_name, object_name)
 
 
 def download_file(OBJECT_NAME, FILE_NAME):
@@ -153,12 +152,13 @@ PROCESS MESSAGE FUNCTION
 def processMessage(li):
     print("Processing Messages ", len(li))
     start_time = time.time()
-    results = dict()
+    results = ""
     
     for message in li:
         logging.info(message)
         object_name, _ = message['Body'].split(':')
-        temp_file_name = object_name + '.h264'
+        # temp_file_name = object_name + '.h264'
+        temp_file_name = object_name
 
         # Download File
         max_retries = 5
@@ -188,9 +188,14 @@ def processMessage(li):
             os.chdir(PATH_DARKNET)
             logging.info("Darknet Finished")
             object_list = get_objects(OUTPUT_FILENAME)
-            results[object_name] = object_list
+            if len(object_list) == 0:
+                results = "no object detected"
+            else:
+                results = ", ".join(object_list)
+            # results[object_name] = object_list
             
-            if(upload_results(results)):
+            
+            if(upload_results(object_name, results)):
                 print("Results Uploaded")
                 print("--- %s seconds ---" % (time.time() - start_time))
                 logging.info("Results Uploaded")
