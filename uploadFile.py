@@ -29,7 +29,7 @@ def upload_file(file_name, bucket, object_name=None):
     print("Uploading ", file_name)
     if object_name == None:
         object_name = generate_random_object_name()
-    object_name = file_name.split('.')[0]
+    object_name = file_name.split('/')[-1].split('.')[0]
     cred_file = 'cred.json'
     ACCESS_KEY, SECRET_KEY, SESSION_TOKEN, REGION = "", "", "", ""
 
