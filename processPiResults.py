@@ -27,12 +27,11 @@ def upload_file(file_name, object_name=None):
         max_retries -= 1
     return max_retries > 0
 
-def upload_results(results):
-    for key in results:
-        with open(key+'.json', 'w') as outfile:
-            json.dump(results, outfile)
-        return upload_file(key+'.json', key)
-
+def upload_results(object_name, results):
+    file_name = object_name
+    with open(file_name, 'r') as f:
+        f.write(results)
+    return upload_file(file_name, object_name)
 
 
 def get_creds():
@@ -98,6 +97,11 @@ if __name__ == '__main__':
     PATH_DARKNET = "/home/pi/darknet/"
     get_creds()
     object_list = get_objects(PATH_DARKNET + OUTPUT_FILENAME)
-    results = dict()
-    results[sys.argv[1]] = object_list
-    upload_results(results)
+    object_name = sys.argv[1]
+    results = ""
+    if len(object_list) == 0:
+        results = "no object detected"
+    else:
+        results = ", ".join(object_list)
+    # results[sys.argv[1]] = object_list
+    upload_results(object_name, results)
