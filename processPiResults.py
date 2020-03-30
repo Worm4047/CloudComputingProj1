@@ -81,8 +81,9 @@ def get_objects(FILENAME):
             object_map = []
             for obj in data[key]:
                 obj_name, obj_conf = obj.split()
-                object_set.add(obj_name)
+                
                 obj_name = (obj_name.replace(':',''))
+                object_set.add(obj_name)
                 obj_conf = (int)(obj_conf.replace('%',''))
                 object_map.append({obj_name:(obj_conf*1.0)/100})
             result[key] = (object_map)
